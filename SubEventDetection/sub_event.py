@@ -1,11 +1,24 @@
-import tensorflow as tf
+import pickle
+import sklearn as 
 import numpy as np
 from math import *
+from nltk.tokenize import TweetTokenizer
+
+def clean_doc(doc):
+	tknzr = TweetTokenizer(reduce_len=True)
+	lmtzr = WordNetLemmatizer()
+	tokens = tknzr.tokenize(doc.decode('utf-8'))
+	cleaned_tokens = [lmtzr.lemmatize(token.lower(), pos='v') for token in tokens]
+	cleaned_doc=""
+	for token in cleaned_tokens: 
+		cleaned_doc += token + " "
+	return cleaned_doc.strip()
+
 
 def tf_idf( doc, term, list_of_docs):
 	num_docs_containing_term = 0.0
-	for doc in list_of_docs:
-		if term in doc:
+	for document in list_of_docs:
+		if term in document:
 			num_docs_containing_term += 1
 
 	if term in doc :
@@ -31,6 +44,18 @@ def location_similarity_score(location1, location2):
 	X2 = cos(latitude_1)*cos(latitude_2)*sin( ((longitude_2-longitude_1)/2.0)**2 )
 	d = 2*asin( (X1+X2)**0.5 )
 	return 1-d
+
+def cosine_similarity_score(vector1, vector2):
+	'''similarity between two tfidf score vectors of documents'''
+	return sklearn.metrics.pairwise.cosine_similarity( np.array(vector1).reshape(1,-1), np.array(vector2).reshape(1,-1) )[0][0]
+
+
+def main():
+
+if __name__=="__main__":
+	return main()
+
+
 
 
 
