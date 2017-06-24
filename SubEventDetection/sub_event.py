@@ -21,10 +21,18 @@ def cluster_text_similarity_score(cluster, point, feature_index):
 	''' return the similarity score of a cluster and a point with text as feature'''
 	return ss.cosine_similarity_score(cluster.centroid, point[feature_index])
 
+def cluster_grouping_similarity_score(cluster, point, feature_index_list):
+	''' returns the similarity score based on their clustering similarity based on other features in feature_index_list'''
+	for feature_index in feature_index_list:
+		total_score = sum([point[feature_index]['cluster_weight']] for doc in cluster.doc_list if doc[feature_index]['cluster_index'] == point[feature_index]['cluster_index'])
+	return score / float(len(cluster.doc_list))
+
+
 class Cluster:
 	'''class for a cluster'''
-	def __init__(self, feature, feature_index, similarity_metric, MBS_coeff, doc, doc_index):
-		''' feature_index is the index of the feature in the datapoints that would be processes'''
+	def __init__(self, feature, feature_index, similarity_metric, MBS_coeff, doc, doc_index, use_MBS = 'True', threshold_func=None):
+		''' feature_index is the index of the feature in the datapoints that would be processes
+		by default MBS algo is used otherwise threshold function needs to be provided'''
 		self.doc_list = [doc_index]
 		self.feature = feature
 		self.feature_index = feature_index
@@ -32,13 +40,18 @@ class Cluster:
 		self.MBS = 1
 		self.MBS_prev = 0
 		self.MBS_coeff = MBS_coeff
+		self.use_MBS = use_MBS
+		self.threshold_func = threshold_func
 		self.centroid = doc[feature_index]
 
 	def similarity_score(self, doc):
 		return self.similarity_metric(self, doc[self.feature_index])
 
 	def get_threshold():
-		return self.MBS*self.MBS_coeff
+		if self.use_MBS:
+			return self.MBS*self.MBS_coeff
+		else:
+			return threshold_func()
 
 	def average_similarity(self, doc_list):
 		return sum([self.similarity_metric(self, doc_list[index][self.feature_index]) for index in self.doc_list]) / float(len(self.doc_list))
@@ -52,11 +65,11 @@ class Cluster:
 		else: 
 			self.MBS = (self.MBS * (len(self.doc_list) - 1) + self.similarity_metric(self, doc_list[doc_index][self.feature_index])) / float(len(self.doc_list))
 
-
 	def add_point(self, doc_list, doc_index):
 		self.doc_list.append(doc_index)
 		self.centroid = sum([ doc_list[index][self.feature_index] for index in self.doc_list])/len(self.doc_list)
-		self.update_MBS(doc_list, doc_index)
+		if self.use_MBS:
+			self.update_MBS(doc_list, doc_index)
 
 class ClusterSolution:
 	'''class for cluster solution for a feature'''
@@ -109,14 +122,6 @@ class ClusterSolution:
 		for doc_index in range(len(doc_list)):
 			self.add_point(doc_list, doc_index)
 		return 
-
-
-
-
-
-
-
-
 
 
 def get_tfidf_scores(list_of_docs):
