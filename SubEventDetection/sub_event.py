@@ -87,14 +87,63 @@ class Cluster:
 
 class ClusterSolution:
 	'''class for cluster solution for a feature'''
-	def __init__(self, feature, feature_index, similarity_metric):
+	def __init__(self, feature, feature_index, similarity_metric, MBS_coeff):
 		''' feature_index is the index of the feature in the datapoints that would be processes'''
 		self.cluster_list = []
+		self.doc_to_cluster_mapping = {}
 		self.feature = feature
 		self.feature_index = feature_index
 		self.similarity_metric = similarity_metric
+		self.MBS_coeff = MBS_coeff
 
-	
+	def get_cluster_index(doc_index):
+		try:
+			return self.doc_to_cluster_mapping[cluster_index]
+		except:
+			print "doc_index not encountered yet"
+			return -1
+
+	def add_point(self, doc_list, doc_index):
+		if len(cluster_list) == 0:
+			cluster_list.append(Cluster(self.feature, self.feature_index, self>similarity_metric, self.MBS_coeff, doc_list[doc_index], doc_index))
+			self.doc_to_cluster_mapping[doc_index] = 0
+			return 
+		
+		max_similarity_score_index = 0
+		max_similarity_score = cluster_list[0].similarity_score(doc_list[doc_index])
+		for cluster_index, cluster in enumerate(cluster_list):
+			cluster_similarity_score = cluster.similarity_score(doc_list[doc_index])
+			if cluster_similarity_score > max_similarity:
+				max_similarity = cluster_similarity_score
+				max_similarity_score_index = cluster_index
+
+		if max_similarity_score >= cluster_list[max_similarity_score_index].get_threshold:
+			cluster_list[max_similarity_score_index].add_point(doc_list, doc_index)
+			self.doc_to_cluster_mapping[doc_index] = max_similarity_score_index
+		else :
+			cluster_list.append(Cluster(self.feature, self.feature_index, self>similarity_metric, self.MBS_coeff, doc_list[doc_index], doc_index))
+			self.doc_to_cluster_mapping[doc_index] = len(cluster_list) - 1
+
+	def reset(self):
+		'''removes existing solution due to previous points'''
+		self.cluster_list = []
+		self.doc_to_cluster_mapping = {}
+		return
+
+	def make_cluster_solution(self, doc_list):
+		''' creates a cluster solution from the given list of points'''
+		self.reset()
+		for doc_index in range(len(doc_list)):
+			self.add_point(doc_list, doc_index)
+		return 
+
+
+
+
+
+
+
+
 
 
 def get_tfidf_scores(list_of_docs):
@@ -107,6 +156,8 @@ def get_tfidf_scores(list_of_docs):
 	return tfidf_score_list
 
 def clean_doc(doc):
+	'''cleans the doc by lemmatsing the verbs and converting to lower case, 
+	handles have been left as they contain usefull information of the person addressed'''
 	tknzr = TweetTokenizer(reduce_len=True)
 	lmtzr = WordNetLemmatizer()
 	tokens = tknzr.tokenize(doc.decode('utf-8'))
