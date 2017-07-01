@@ -18,12 +18,12 @@ def tf_idf( doc, term, list_of_docs):
 	return (freq_term_in_doc / words_in_doc) * tf.log( len(list_of_docs) / num_docs_containing_term)
 
 def date_similarity_score(date1, date2):
-	''' if the difference in days is more than one month apart it is taken as 0'''
-	diff_in_days = abs(date1-date2)
-	seperation_limit_in_days = 30.0
-	if diff_in_days > seperation_limit_in_days:
+	''' if the difference in seconds is more than 5 minutes apart it is taken as 0'''
+	diff_in_seconds = abs(date1-date2)
+	seperation_limit_in_seconds = 300.0
+	if diff_in_seconds > seperation_limit_in_seconds:
 		return 0.0
-	return 1- ( diff_in_days / seperation_limit_in_days )
+	return 1- ( diff_in_seconds / seperation_limit_in_seconds )
 
 def location_similarity_score(location1, location2):
 	''' similarity between two locations using the widely accepted Haversine Distance'''
